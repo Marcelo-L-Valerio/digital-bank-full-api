@@ -1,7 +1,4 @@
 
-import os
-import uuid
-
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import ValidationError
@@ -10,18 +7,27 @@ from django.core.exceptions import ValidationError
 class UserManager(BaseUserManager):
     '''Manager for users'''
 
-    def create(self, email, password=None, **extra_fields):
+    def create(self, name, password=None, **extra_fields):
         '''Create, save and return a new user'''
 
-        user = self.model(email=self.normalize_email(email), **extra_fields)
+        if 'email' in extra_fields:
+            extra_fields['email'] = self.normalize_email(extra_fields['email'])
+        elif 'is_admin' in extra_fields:
+            extra_fields['email'] = None
+            extra_fields.pop('is_admin')
+        else:
+            raise ValueError('User must have an email address.')
+
+        user = self.model(name=name, **extra_fields)
         user.set_password(password)
         user.save()
 
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, name, password):
         '''Create and return a new superuser'''
-        user = self.create_user(email, password)
+        user = self.create(name, password, is_admin=True)
+        user.is_staff = True
         user.is_superuser = True
         user.save()
 
@@ -40,8 +46,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     owner_type = models.CharField(max_length=2, choices=USER_OPTS, default='PF')
     cpf = models.CharField(max_length=11, unique=True, null=True)
     cnpj = models.CharField(max_length=14, unique=True, null=True)
-    email = models.EmailField(max_length=255, unique=True)
+    email = models.EmailField(max_length=255, unique=True, null=True)
     name = models.CharField(max_length=255, unique=True)
+    is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
 

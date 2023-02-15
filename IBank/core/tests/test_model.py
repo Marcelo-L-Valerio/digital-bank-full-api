@@ -25,6 +25,26 @@ class UserAppTests(TestCase):
             self.assertEqual(getattr(user, param), value)
         self.assertTrue(user.check_password(password))
 
+    def test_normalize_email(self):
+
+        payload = {
+            'cpf': '12345678910',
+            'email': 'TEst@ExampLE.cOM',
+            'name': 'TestUser',
+        }
+        password = 'Testpass123'
+        user = User.objects.create(**payload, password=password)
+
+        self.assertEqual(user.email, 'TEst@example.com')
+
+    def test_create_super_user(self):
+
+        user = User.objects.create_superuser(name='root', password='123')
+
+        self.assertEqual(user.name, 'root')
+        self.assertEqual(user.email, None)
+        self.assertTrue(user.check_password('123'))
+
     def test_cnpj_user(self):
 
         payload = {

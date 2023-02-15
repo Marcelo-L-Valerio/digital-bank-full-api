@@ -1,11 +1,10 @@
 FROM python:3.9-alpine3.16
-LABEL maintainer=""
 
 ENV PYTHONUNBUFFERED 1
 
 COPY ./requirements.txt /tmp/requirements.txt
-COPY ./IBank /IBank
-WORKDIR /IBank
+COPY ./ibank /ibank
+WORKDIR /ibank
 EXPOSE 8000
 
 ARG DEV=false
